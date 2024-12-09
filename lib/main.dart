@@ -1,17 +1,26 @@
+import 'package:cashregister/database.dart';
+import 'package:cashregister/entity/person.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database =
+      await $FloorAppDatabase.databaseBuilder("study001.db").build();
+
+  runApp(MyApp(database));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AppDatabase database;
+
+  const MyApp(this.database, {super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -31,13 +40,15 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(database, title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  class MyHomePage extends StatefulWidget {
+  final AppDatabase database;
+
+  const MyHomePage(this.database, {super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -57,15 +68,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    widget.database.personDao.findLastPerson().then((p) => {
+          if (p != null) {
+            setState(() {
+              _counter = p.id;
+            })
+          }
+        }).catchError((onError) => {
+          print("Error: ")
     });
+  }
+
+  void _incrementCounter() {
+    final int newId = _counter + 1;
+    final Person newPerson = Person(newId, "Person-$_counter");
+    widget.database.personDao.insertPerson(newPerson).then((_) => {
+          setState(() {
+
+            // This call to setState tells the Flutter framework that something has
+            // changed in this State, which causes it to rerun the build method below
+            // so that the display can reflect the updated values. If we changed
+            // _counter without calling setState(), then the build method would not be
+            // called again, and so nothing would appear to happen.
+            _counter = newId;
+          })
+        });
   }
 
   @override
