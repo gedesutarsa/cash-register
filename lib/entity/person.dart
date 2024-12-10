@@ -6,5 +6,6 @@ class Person {
   @primaryKey
   final int id ;
   final String name ;
-  Person( this.id , this.name);
+  final String? remark ;
+  Person( { required  this.id ,required  this.name , this.remark});
 }

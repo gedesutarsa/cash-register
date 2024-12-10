@@ -96,7 +96,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Person` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Person` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `remark` TEXT, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -118,8 +118,11 @@ class _$PersonDao extends PersonDao {
         _personInsertionAdapter = InsertionAdapter(
             database,
             'Person',
-            (Person item) =>
-                <String, Object?>{'id': item.id, 'name': item.name},
+            (Person item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'remark': item.remark
+                },
             changeListener);
 
   final sqflite.DatabaseExecutor database;
@@ -133,15 +136,19 @@ class _$PersonDao extends PersonDao {
   @override
   Future<List<Person>> findAllPersons() async {
     return _queryAdapter.queryList('SELECT * FROM Person',
-        mapper: (Map<String, Object?> row) =>
-            Person(row['id'] as int, row['name'] as String));
+        mapper: (Map<String, Object?> row) => Person(
+            id: row['id'] as int,
+            name: row['name'] as String,
+            remark: row['remark'] as String?));
   }
 
   @override
   Stream<Person?> findPersonById(int id) {
     return _queryAdapter.queryStream('SELECT * FROM Person WHERE id = ?1',
-        mapper: (Map<String, Object?> row) =>
-            Person(row['id'] as int, row['name'] as String),
+        mapper: (Map<String, Object?> row) => Person(
+            id: row['id'] as int,
+            name: row['name'] as String,
+            remark: row['remark'] as String?),
         arguments: [id],
         queryableName: 'Person',
         isView: false);
@@ -151,8 +158,10 @@ class _$PersonDao extends PersonDao {
   Future<Person?> findLastPerson() async {
     return _queryAdapter.query(
         'SELECT * FROM Person order by id desc   limit 1',
-        mapper: (Map<String, Object?> row) =>
-            Person(row['id'] as int, row['name'] as String));
+        mapper: (Map<String, Object?> row) => Person(
+            id: row['id'] as int,
+            name: row['name'] as String,
+            remark: row['remark'] as String?));
   }
 
   @override

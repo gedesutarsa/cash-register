@@ -1,11 +1,13 @@
 import 'package:cashregister/database.dart';
 import 'package:cashregister/entity/person.dart';
+import 'package:cashregister/person_editor/view/person_editor_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database =
-      await $FloorAppDatabase.databaseBuilder("study001.db").build();
+      await $FloorAppDatabase.databaseBuilder("study002.db").build();
 
   runApp(MyApp(database));
 }
@@ -18,9 +20,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return RepositoryProvider.value(value: database , child: MaterialApp(
       title: 'Flutter Demo',
-
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -41,7 +42,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: MyHomePage(database, title: 'Flutter Demo Home Page'),
-    );
+    ))
+     ;
   }
 }
 
@@ -85,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() {
     final int newId = _counter + 1;
-    final Person newPerson = Person(newId, "Person-$_counter");
+    final Person newPerson = Person( id:  newId, name:  "Person-$_counter");
     widget.database.personDao.insertPerson(newPerson).then((_) => {
           setState(() {
 
@@ -143,6 +145,10 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            ElevatedButton(onPressed: (){
+              Navigator.of(context).push(PersonEditorPage.route());
+
+            }, child: const Text("Bloc"))
           ],
         ),
       ),
@@ -151,6 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+
     );
   }
 }
